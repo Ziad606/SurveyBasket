@@ -1,8 +1,8 @@
-﻿namespace SurveyBasket.Api.Contracts.Validators;
+﻿namespace SurveyBasket.Api.Contracts.Polls;
 
-public class PollRequestValidator : AbstractValidator<PollRequest>
+public class LoginRequestValidator : AbstractValidator<PollRequest>
 {
-    public PollRequestValidator()
+    public LoginRequestValidator()
     {
         RuleFor(x => x.Title)
              .NotEmpty()
@@ -28,6 +28,6 @@ public class PollRequestValidator : AbstractValidator<PollRequest>
 
     private bool HasValidDate(PollRequest pollRequest)
     {
-        return (pollRequest.EndsAt >= pollRequest.StartsAt);
+        return pollRequest.EndsAt >= pollRequest.StartsAt;
     }
 }
