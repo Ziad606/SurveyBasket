@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SurveyBasket.Api.Presistenace;
 
@@ -11,9 +12,11 @@ using SurveyBasket.Api.Presistenace;
 namespace SurveyBasket.Api.Presistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250702112445_AddRefreshTokens")]
+    partial class AddRefreshTokens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -262,7 +265,7 @@ namespace SurveyBasket.Api.Presistence.Migrations
                     b.HasIndex("Title")
                         .IsUnique();
 
-                    b.ToTable("Polls", (string)null);
+                    b.ToTable("Polls");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -344,7 +347,7 @@ namespace SurveyBasket.Api.Presistence.Migrations
 
                             b1.HasKey("UserId", "Id");
 
-                            b1.ToTable("RefreshTokens", (string)null);
+                            b1.ToTable("RefreshTokens");
 
                             b1.WithOwner()
                                 .HasForeignKey("UserId");

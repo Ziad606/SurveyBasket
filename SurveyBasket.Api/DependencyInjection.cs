@@ -17,8 +17,13 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddControllers();
-        services.AddAuthConfig();
+        services.AddAuthConfig(configuration);
 
+        //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.AddOptions<JwtOptions>()
+            .BindConfiguration(JwtOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services
             .AddSwaggerServices()
@@ -61,12 +66,17 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddAuthConfig(this IServiceCollection services)
+    private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IJwtProvider, JwtProvider>();
 
         services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
+
+
+        services.AddSingleton<IJwtProvider, JwtProvider>();
+
+        var jwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+
 
         services.AddAuthentication(options =>
         {
@@ -74,20 +84,20 @@ public static class DependencyInjection
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
         })
-            .AddJwtBearer(o =>
+        .AddJwtBearer(o =>
+        {
+            o.SaveToken = true;
+            o.TokenValidationParameters = new TokenValidationParameters
             {
-                o.SaveToken = true;
-                o.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YJwPOiayCEl0MCVNPteOWo7hWheLEu3a")),
-                    ValidIssuer = "SurveyBasketApp",
-                    ValidAudience = "SurveyBasketApp users"
-                };
-            });
+                ValidateIssuer = true,
+                ValidateIssuerSigningKey = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key!)),
+                ValidIssuer = jwtSettings?.Issuer,
+                ValidAudience = jwtSettings?.Audience,
+            };
+        });
 
 
 
