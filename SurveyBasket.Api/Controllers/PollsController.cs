@@ -13,7 +13,6 @@ public class PollsController(IPollService pollService) : ControllerBase
 
 
     [HttpGet("")]
-
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var _polls = await _pollService.GetALlAsync(cancellationToken);
@@ -41,7 +40,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     public async Task<IActionResult> Add([FromBody] PollRequest request, CancellationToken cancellationToken)
     {
         var newPoll = await _pollService.AddAsync(request.Adapt<Poll>(), cancellationToken);
-        return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
+        return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll.Adapt<PollResponse>());
     }
 
     [HttpPut("{id}")]
