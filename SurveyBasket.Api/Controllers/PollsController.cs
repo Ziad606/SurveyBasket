@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using SurveyBasket.Api.Services.Polls;
 
 namespace SurveyBasket.Api.Controllers;
@@ -37,6 +38,7 @@ public class PollsController(IPollService pollService) : ControllerBase
 
 
     [HttpPost("")]
+    [DisableCors]
     public async Task<IActionResult> Add([FromBody] PollRequest request, CancellationToken cancellationToken)
     {
         var newPoll = await _pollService.AddAsync(request.Adapt<Poll>(), cancellationToken);
@@ -56,6 +58,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [DisableCors]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         var isDeleted = await _pollService.DeleteAsync(id, cancellationToken);
@@ -66,6 +69,7 @@ public class PollsController(IPollService pollService) : ControllerBase
         return NoContent();
     }
     [HttpPut("{id}/togglePublish")]
+    [EnableCors("AllowAll")]
     public async Task<IActionResult> TogglePublish([FromRoute] int id, CancellationToken cancellationToken)
     {
         var isToggled = await _pollService.TogglePublishStatusASync(id, cancellationToken);

@@ -18,6 +18,24 @@ public static class DependencyInjection
     {
         services.AddControllers();
         services.AddAuthConfig(configuration);
+        var alloweOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
+        services.AddCors(options =>
+           {
+               options.AddPolicy("AllowAll", builder =>
+                    builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                );
+               options.AddPolicy("MyPolicy", builder =>
+                   builder
+                   .WithOrigins(alloweOrigins!)
+                   .AllowAnyMethod()       // or specify methode : .WithMethods("Get","Put")
+                   .AllowAnyHeader()      //  or specify headers : .WithHeaders(HeaderNames.ContentType, "")
+
+                );
+           }
+        );
 
         //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.AddOptions<JwtOptions>()
