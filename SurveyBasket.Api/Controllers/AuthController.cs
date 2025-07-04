@@ -1,15 +1,12 @@
-﻿using Microsoft.Extensions.Options;
-using SurveyBasket.Api.Authentication;
-using SurveyBasket.Api.Services.Authentication;
+﻿using SurveyBasket.Api.Services.Authentication;
 
 namespace SurveyBasket.Api.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class AuthController(IAuthService authService, IOptions<JwtOptions> jwtOptions) : ControllerBase
+public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
-    private readonly IOptions<JwtOptions> _jwtOptions = jwtOptions;
 
     [HttpPost("")]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken)
@@ -18,7 +15,7 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> jwtOp
         var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
 
 
-        return authResult is null ? BadRequest("Invalid Email or Password") : Ok(authResult);
+        return authResult.IsSuccess ? Ok(authResult.Value) : Problem(statusCode: StatusCodes.Status400BadRequest, title: authResult.Error.Code, detail: authResult.Error.Description);
     }
 
 
@@ -28,7 +25,7 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> jwtOp
         var authResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
 
-        return authResult is null ? BadRequest("Invalid Refresh Token") : Ok(authResult);
+        return authResult.IsSuccess ? Ok(authResult.Value) : Problem(statusCode: StatusCodes.Status400BadRequest, title: authResult.Error.Code, detail: authResult.Error.Description);
     }
 
 
@@ -38,6 +35,6 @@ public class AuthController(IAuthService authService, IOptions<JwtOptions> jwtOp
         var isRevoked = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
 
-        return isRevoked ? Ok() : BadRequest("Operation Failed ");
+        return isRevoked.IsSuccess ? Ok() : Problem(statusCode: StatusCodes.Status400BadRequest, title: isRevoked.Error.Code, detail: isRevoked.Error.Description);
     }
 }

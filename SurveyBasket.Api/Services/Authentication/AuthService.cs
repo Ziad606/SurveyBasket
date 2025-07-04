@@ -12,16 +12,16 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
     private readonly int _refreshTokenExpiryDays = 14;
 
 
-    public async Task<AuthResponse?> GetTokenAsync(string email, string password, CancellationToken CancellationToken = default)
+    public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken CancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(email);
 
         if (user is null)
-            return null;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
         var isValidPassword = await _userManager.CheckPasswordAsync(user, password);
         if (!isValidPassword)
-            return null;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
         var (token, expiresIn) = _jwtProvider.GenerateToken(user);
         var refreshToken = GenerateRefreshToken();
@@ -34,26 +34,27 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
         });
 
         await _userManager.UpdateAsync(user);
-
-        return new AuthResponse(user.Id, user.FirstName, user.LastName, user.Email, token, expiresIn, refreshToken, refreshTokenExpiration);
+        var response = new AuthResponse(user.Id, user.FirstName, user.LastName, user.Email, token, expiresIn, refreshToken, refreshTokenExpiration);
+        return Result.Success(response);
     }
 
 
-    public async Task<AuthResponse?> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken CancellationToken = default)
+    public async Task<Result<AuthResponse>> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken CancellationToken = default)
     {
         var userId = _jwtProvider.ValidateToken(token);
 
         if (userId is null)
-            return null;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidToken);
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
-            return null;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidUserId);
+
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(rt => rt.Token == refreshToken && rt.IsActive);
 
         if (userRefreshToken is null)
-            return null;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidToken);
 
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 
@@ -69,31 +70,32 @@ public class AuthService(UserManager<ApplicationUser> userManager, IJwtProvider 
 
         await _userManager.UpdateAsync(user);
 
-        return new AuthResponse(user.Id, user.FirstName, user.LastName, user.Email, newToken, expiresIn, newRefreshToken, refreshTokenExpiration);
+        var response = new AuthResponse(user.Id, user.FirstName, user.LastName, user.Email, newToken, expiresIn, newRefreshToken, refreshTokenExpiration);
+        return Result.Success(response);
 
     }
 
-    public async Task<bool> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken CancellationToken = default)
+    public async Task<Result> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken CancellationToken = default)
     {
         var userId = _jwtProvider.ValidateToken(token);
 
         if (userId is null)
-            return false;
+            return Result.Failure(UserErrors.InvalidToken);
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
-            return false;
+            return Result.Failure(UserErrors.InvalidUserId);
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(rt => rt.Token == refreshToken && rt.IsActive);
 
         if (userRefreshToken is null)
-            return false;
+            return Result.Failure<AuthResponse>(UserErrors.InvalidToken);
 
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 
         await _userManager.UpdateAsync(user);
 
-        return true;
+        return Result.Success();
     }
 
     private string GenerateRefreshToken()
