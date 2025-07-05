@@ -19,25 +19,37 @@ public class PollService(ApplicationDbContext context) : IPollService
             Result.Success(poll.Adapt<PollResponse>()) : Result.Failure<PollResponse>(PollErrors.PollNotFound);
     }
 
-    public async Task<PollResponse> AddAsync(PollRequest request, CancellationToken cancellationToken)
+    public async Task<Result<PollResponse>> AddAsync(PollRequest request, CancellationToken cancellationToken)
     {
-        await _context.AddAsync(request.Adapt<Poll>(), cancellationToken);
+        var isExisting = await _context.Polls.AnyAsync(p => p.Title == request.Title, cancellationToken);
+
+        if (isExisting)
+            return Result.Failure<PollResponse>(PollErrors.DuplicatePollTitle);
+        var poll = request.Adapt<Poll>();
+        await _context.AddAsync(poll, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return request.Adapt<PollResponse>();
+        return Result.Success(poll.Adapt<PollResponse>());
     }
 
-    public async Task<Result> UpdateAsync(int id, PollRequest poll, CancellationToken cancellationToken)
+    public async Task<Result> UpdateAsync(int id, PollRequest request, CancellationToken cancellationToken)
     {
+        var isExisting = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id, cancellationToken);
+
+        if (isExisting)
+            return Result.Failure<PollResponse>(PollErrors.DuplicatePollTitle);
+
         var existingPoll = await _context.Polls.FindAsync(id, cancellationToken);
 
         if (existingPoll is null)
             return Result.Failure(PollErrors.PollNotFound);
 
-        existingPoll.Title = poll.Title;
-        existingPoll.Summary = poll.Summary;
-        existingPoll.StartsAt = poll.StartsAt;
-        existingPoll.EndsAt = poll.EndsAt;
+
+
+        existingPoll.Title = request.Title;
+        existingPoll.Summary = request.Summary;
+        existingPoll.StartsAt = request.StartsAt;
+        existingPoll.EndsAt = request.EndsAt;
         await _context.SaveChangesAsync(cancellationToken);
 
 

@@ -19,7 +19,6 @@ public class LoginRequestValidator : AbstractValidator<PollRequest>
             .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today));
 
         RuleFor(x => x)
-            .NotEmpty()
             .Must(HasValidDate)
             .WithName(nameof(PollRequest.EndsAt))
             .WithMessage("Start Date should be before {PropertyName}");

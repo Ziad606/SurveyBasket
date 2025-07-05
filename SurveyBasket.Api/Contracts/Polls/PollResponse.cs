@@ -7,5 +7,5 @@ public record PollResponse(
     bool IsPublished,
     DateOnly StartsAt,
     DateOnly EndsAt
-    );
+);
 
