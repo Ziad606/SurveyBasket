@@ -6,6 +6,7 @@ using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using SurveyBasket.Api.Authentication;
 using SurveyBasket.Api.Services.Authentication;
 using SurveyBasket.Api.Services.Polls;
+using SurveyBasket.Api.Services.Questions;
 using System.Reflection;
 using System.Text;
 
@@ -55,6 +56,8 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IPollService, PollService>();
+        services.AddScoped<IQuestionService, QuestionService>();
+
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();

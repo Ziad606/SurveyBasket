@@ -8,15 +8,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
+    public DbSet<Answer> Answers { get; set; }
     public DbSet<Poll> Polls { get; set; }
+    public DbSet<Question> Questions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        var cascadeFKs = modelBuilder.Model
+            .GetEntityTypes()
+            .SelectMany(t => t.GetForeignKeys())
+            .Where(fk => fk.DeleteBehavior == DeleteBehavior.Cascade);
+
+        foreach (var fk in cascadeFKs)
+            fk.DeleteBehavior = DeleteBehavior.Restrict;
+
         base.OnModelCreating(modelBuilder);
     }
-
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
