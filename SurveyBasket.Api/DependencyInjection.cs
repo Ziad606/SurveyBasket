@@ -7,6 +7,7 @@ using SurveyBasket.Api.Authentication;
 using SurveyBasket.Api.Services.Authentication;
 using SurveyBasket.Api.Services.Polls;
 using SurveyBasket.Api.Services.Questions;
+using SurveyBasket.Api.Services.Results;
 using SurveyBasket.Api.Services.Votes;
 using System.Reflection;
 using System.Text;
@@ -59,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IVoteService, VoteService>();
+        services.AddScoped<IResultService, ResultService>();
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();

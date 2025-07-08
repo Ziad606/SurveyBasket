@@ -19,6 +19,7 @@ public class VotesController(IVoteService voteService) : ControllerBase
     }
 
 
+
     [HttpPost("")]
     public async Task<IActionResult> Add([FromRoute] int pollId, [FromBody] VoteRequest request, CancellationToken cancellationToken)
     {
