@@ -4,11 +4,28 @@ public class PollService(ApplicationDbContext context) : IPollService
 {
     private readonly ApplicationDbContext _context = context;
 
-    public async Task<Result<IEnumerable<PollResponse>>> GetALlAsync(CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<PollResponse>>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var polls = await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
+        var polls = await _context.Polls
+                    .AsNoTracking()
+                    .ProjectToType<PollResponse>()
+                    .ToListAsync(cancellationToken);
         return polls is not null ?
-            Result.Success(polls.Adapt<IEnumerable<PollResponse>>()) : Result.Failure<IEnumerable<PollResponse>>(PollErrors.NoAvailablePolls);
+            Result.Success<IEnumerable<PollResponse>>(polls) : Result.Failure<IEnumerable<PollResponse>>(PollErrors.NoAvailablePolls);
+    }
+
+    public async Task<Result<IEnumerable<PollResponse>>> GetCurrentAsync(CancellationToken cancellationToken = default)
+    {
+        var polls = await _context.Polls
+            .Where(p => p.IsPublished && p.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow) && p.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow))
+                    .AsNoTracking()
+                    .ProjectToType<PollResponse>()
+                    .ToListAsync(cancellationToken);
+
+        if (polls is null)
+            return Result.Failure<IEnumerable<PollResponse>>(PollErrors.NoAvailablePolls);
+
+        return Result.Success<IEnumerable<PollResponse>>(polls);
     }
 
     public async Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken)
@@ -81,4 +98,6 @@ public class PollService(ApplicationDbContext context) : IPollService
         await _context.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+
+
 }
