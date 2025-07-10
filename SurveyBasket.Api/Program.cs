@@ -1,4 +1,5 @@
 
+using Serilog;
 using SurveyBasket.Api;
 
 
@@ -8,6 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDependencies(builder.Configuration);
 
+builder.Services.AddHybridCache();
+
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+);
 
 var app = builder.Build();
 
@@ -21,7 +28,7 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseHttpsRedirection();
-
+app.UseSerilogRequestLogging();
 app.UseCors("AllowAll");
 //app.UseCors("MyPolicy");
 

@@ -1,24 +1,24 @@
 ﻿using SurveyBasket.Api.Contracts.Votes;
 using SurveyBasket.Api.Extensions;
+using SurveyBasket.Api.Services.Questions;
 using SurveyBasket.Api.Services.Votes;
 
 namespace SurveyBasket.Api.Controllers;
 [Route("api/polls/{pollId}/vote")]
 [ApiController]
-public class VotesController(IVoteService voteService) : ControllerBase
+[Authorize]
+public class VotesController(IVoteService voteService, IQuestionService questionService) : ControllerBase
 {
     private readonly IVoteService _voteService = voteService;
+    private readonly IQuestionService _questionService = questionService;
 
-
-    [HttpGet("{id}")]
-    public async Task<IActionResult> Get([FromRoute] int pollId, [FromRoute] int id, CancellationToken cancellationToken)
+    [HttpGet("")]
+    public async Task<IActionResult> GetAvailable([FromRoute] int pollId, CancellationToken cancellationToken)
     {
-        //var result = await _voteService.GetAsync(pollId, id, cancellationToken);
-        //return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-        return Ok();
+        var userId = User.GetUserId();
+        var result = await _questionService.GetAvailableAsync(pollId, userId!, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
-
-
 
     [HttpPost("")]
     public async Task<IActionResult> Add([FromRoute] int pollId, [FromBody] VoteRequest request, CancellationToken cancellationToken)
