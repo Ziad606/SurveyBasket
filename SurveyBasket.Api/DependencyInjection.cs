@@ -1,4 +1,5 @@
-﻿using MapsterMapper;
+﻿using Hangfire;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -14,6 +15,7 @@ using SurveyBasket.Api.Services.Votes;
 using SurveyBasket.Api.Settings;
 using System.Reflection;
 using System.Text;
+
 
 namespace SurveyBasket.Api;
 
@@ -57,14 +59,18 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("Connection string 'DefaultConnection' is not found");
 
+
+        services.AddHangfireConfig(configuration);
+
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IEmailSender, EmailService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IQuestionService, QuestionService>();
-        services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
-        services.AddScoped<IEmailSender, EmailService>();
+        services.AddScoped<IVoteService, VoteService>();
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
@@ -145,4 +151,18 @@ public static class DependencyInjection
 
         return services;
     }
+    private static IServiceCollection AddHangfireConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        // Hangfire services.
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection")));
+
+        // Add the processing server as IHostedService
+        services.AddHangfireServer();
+        return services;
+    }
+
 }
