@@ -1,10 +1,10 @@
 ﻿
 using Hangfire;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using SurveyBasket.Api.Authentication;
 using SurveyBasket.Api.Contracts.Register;
+using SurveyBasket.Api.Contracts.User;
 using SurveyBasket.Api.Helpers;
 using System.Security.Cryptography;
 using System.Text;
@@ -137,7 +137,7 @@ public class AuthService(
 
             _logger.LogInformation("Confirmation Code : {code}", code);
 
-            await SendEmailConfirmationAsync(user, code);
+            await SendConfirmationEmailAsync(user, code);
 
             return Result.Success();
         }
@@ -188,30 +188,103 @@ public class AuthService(
 
         _logger.LogInformation("Confirmation Code : {code}", code);
 
-        await SendEmailConfirmationAsync(user, code);
+        await SendConfirmationEmailAsync(user, code);
 
 
         return Result.Success();
     }
 
 
+    public async Task<Result> SendResetPasswordCodeAsync(ForgotPasswordRequest request)
+    {
+
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        if (user is null)
+            return Result.Success();
+
+        if (!user.EmailConfirmed)
+            return Result.Failure(UserErrors.EmailNotConfirmed);
+
+        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+        _logger.LogInformation("Reset Code : {code}", code);
+
+        await SendResetPasswordEmailAsync(user, code);
+
+
+        return Result.Success();
+    }
+
+
+    public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null || !user.EmailConfirmed)
+            return Result.Failure(UserErrors.InvalidCode);
+
+
+        var code = request.Code;
+
+        IdentityResult result;
+
+        try
+        {
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            result = await _userManager.ResetPasswordAsync(user, code, request.NewPassword);
+        }
+        catch (FormatException)
+        {
+            result = IdentityResult.Failed(_userManager.ErrorDescriber.InvalidToken());
+        }
+
+
+        if (result.Succeeded)
+        {
+            return Result.Success();
+        }
+
+        var error = result.Errors.First();
+
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status401Unauthorized));
+
+    }
+
     private static string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     }
 
-    private async Task SendEmailConfirmationAsync(ApplicationUser user, string code)
+    private async Task SendConfirmationEmailAsync(ApplicationUser user, string code)
     {
         var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
         var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
             new Dictionary<string, string>
             {
-                    {"{{name}}", user.FirstName },
+                    { "{{name}}", user.FirstName },
                     { "{{action_url}}", $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"}
             }
         );
 
         BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Survey Basket : Email Confirmation", emailBody));
+        await Task.CompletedTask;
+    }
+
+
+    private async Task SendResetPasswordEmailAsync(ApplicationUser user, string code)
+    {
+        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+        var emailBody = EmailBodyBuilder.GenerateEmailBody("ForgetPassword",
+            new Dictionary<string, string>
+            {
+                    {"{{name}}", user.FirstName },
+                    { "{{action_url}}", $"{origin}/auth/forgetPassword?userId={user.Email}&code={code}"}
+            }
+        );
+
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Survey Basket : Change Password", emailBody));
         await Task.CompletedTask;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SurveyBasket.Api.Contracts.Register;
+using SurveyBasket.Api.Contracts.User;
 using SurveyBasket.Api.Services.Authentication;
 
 namespace SurveyBasket.Api.Controllers;
@@ -66,4 +67,20 @@ public class AuthController(IAuthService authService) : ControllerBase
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
 
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var result = await _authService.SendResetPasswordCodeAsync(request);
+
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await _authService.ResetPasswordAsync(request);
+
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
 }

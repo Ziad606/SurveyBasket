@@ -1,9 +1,5 @@
-
-using Hangfire;
-using HangfireBasicAuthenticationFilter;
 using Serilog;
 using SurveyBasket.Api;
-using SurveyBasket.Api.Services.Mail;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,27 +31,27 @@ app.UseHttpsRedirection();
 
 app.UseSerilogRequestLogging();
 
-app.UseHangfireDashboard("/jobs", new DashboardOptions
-{
-    Authorization =
-    [
-        new HangfireCustomBasicAuthenticationFilter
-        {
-            User = app.Configuration.GetValue<string>("HangfireSettings:Username"),
-            Pass = app.Configuration.GetValue<string>("HangfireSettings:Password")
-        }
-    ],
-    DashboardTitle = "Survey Basket Dashboard",
-    //IsReadOnlyFunc = (DashboardContext context) => true,
-});
+//app.UseHangfireDashboard("/jobs", new DashboardOptions
+//{
+//    Authorization =
+//    [
+//        new HangfireCustomBasicAuthenticationFilter
+//        {
+//            User = app.Configuration.GetValue<string>("HangfireSettings:Username"),
+//            Pass = app.Configuration.GetValue<string>("HangfireSettings:Password")
+//        }
+//    ],
+//    DashboardTitle = "Survey Basket Dashboard",
+//    //IsReadOnlyFunc = (DashboardContext context) => true,
+//});
 
-var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+//var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
 
-using var scope = scopeFactory.CreateScope();
+//using var scope = scopeFactory.CreateScope();
 
-var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+//var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-RecurringJob.AddOrUpdate("SendNewPollsNotification", () => notificationService.SendPollsNotification(null), Cron.Daily);
+//RecurringJob.AddOrUpdate("SendNewPollsNotification", () => notificationService.SendPollsNotification(null), Cron.Daily);
 
 app.UseCors("AllowAll");
 //app.UseCors("MyPolicy");

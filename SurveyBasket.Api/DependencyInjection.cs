@@ -1,7 +1,6 @@
 ﻿using Hangfire;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
@@ -11,6 +10,7 @@ using SurveyBasket.Api.Services.Mail;
 using SurveyBasket.Api.Services.Polls;
 using SurveyBasket.Api.Services.Questions;
 using SurveyBasket.Api.Services.Results;
+using SurveyBasket.Api.Services.User;
 using SurveyBasket.Api.Services.Votes;
 using SurveyBasket.Api.Settings;
 using System.Reflection;
@@ -71,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IResultService, ResultService>();
         services.AddScoped<IVoteService, VoteService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();

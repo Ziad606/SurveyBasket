@@ -1,5 +1,6 @@
 ﻿
 using SurveyBasket.Api.Contracts.Register;
+using SurveyBasket.Api.Contracts.User;
 
 namespace SurveyBasket.Api.Services.Authentication;
 
@@ -11,4 +12,7 @@ public interface IAuthService
     Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
     Task<Result> ConfirmEmailAsync(ConfirmEmailRequest request);
     Task<Result> ResendConfirmEmailAsync(ResendConfirmEmailRequest request);
+    Task<Result> SendResetPasswordCodeAsync(ForgotPasswordRequest request);
+    Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
+
 }
