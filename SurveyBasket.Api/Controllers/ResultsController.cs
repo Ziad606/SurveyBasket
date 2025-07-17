@@ -1,9 +1,12 @@
-﻿using SurveyBasket.Api.Services.Results;
+﻿using SurveyBasket.Api.Abstractions.Consts;
+using SurveyBasket.Api.Services.Results;
 
 namespace SurveyBasket.Api.Controllers;
 
 [Route("api/polls/{pollId}/[controller]")]
 [ApiController]
+[Authorize]
+[HasPermission(Permissions.Results)]
 public class ResultsController(IResultService resultService) : ControllerBase
 {
     private readonly IResultService _resultService = resultService;

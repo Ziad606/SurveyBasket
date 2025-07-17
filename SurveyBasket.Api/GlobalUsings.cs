@@ -6,6 +6,7 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using SurveyBasket.Api.Abstractions;
+global using SurveyBasket.Api.Authentication.Filters;
 global using SurveyBasket.Api.Contracts.Authentication;
 global using SurveyBasket.Api.Contracts.Polls;
 global using SurveyBasket.Api.Entities;

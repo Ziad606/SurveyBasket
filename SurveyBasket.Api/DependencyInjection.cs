@@ -73,6 +73,9 @@ public static class DependencyInjection
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IUserService, UserService>();
 
+        services.AddTransient<IAuthorizationHandler, PermissionRequirementHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
         services.AddHttpContextAccessor();
@@ -111,7 +114,7 @@ public static class DependencyInjection
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
 
-        services.AddIdentity<ApplicationUser, IdentityRole>()
+        services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
