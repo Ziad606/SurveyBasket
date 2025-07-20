@@ -10,6 +10,7 @@ using SurveyBasket.Api.Services.Mail;
 using SurveyBasket.Api.Services.Polls;
 using SurveyBasket.Api.Services.Questions;
 using SurveyBasket.Api.Services.Results;
+using SurveyBasket.Api.Services.Roles;
 using SurveyBasket.Api.Services.User;
 using SurveyBasket.Api.Services.Votes;
 using SurveyBasket.Api.Settings;
@@ -72,9 +73,11 @@ public static class DependencyInjection
         services.AddScoped<IResultService, ResultService>();
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
 
-        services.AddTransient<IAuthorizationHandler, PermissionRequirementHandler>();
-        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+        services.AddScoped<IAuthorizationHandler, PermissionRequirementHandler>();
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
