@@ -10,7 +10,7 @@ builder.Services.AddDependencies(builder.Configuration);
 
 builder.Services.AddHybridCache();
 
-builder.Host.UseSerilog((context, services, configuration) =>
+builder.Host.UseSerilog((context, configuration) =>
     configuration
         .ReadFrom.Configuration(context.Configuration)
 );

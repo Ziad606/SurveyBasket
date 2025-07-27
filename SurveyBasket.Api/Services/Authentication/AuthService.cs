@@ -2,7 +2,6 @@
 using Hangfire;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
-using SurveyBasket.Api.Abstractions.Consts;
 using SurveyBasket.Api.Authentication;
 using SurveyBasket.Api.Contracts.Register;
 using SurveyBasket.Api.Contracts.User;
@@ -39,7 +38,11 @@ public class AuthService(
         if (user is null)
             return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
-        var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+        if (user.IsDiabled)
+            return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
+
+
+        var result = await _signInManager.PasswordSignInAsync(user, password, false, true);
 
         if (result.Succeeded)
         {
@@ -60,7 +63,9 @@ public class AuthService(
         }
 
 
-        return Result.Failure<AuthResponse>(UserErrors.EmailNotConfirmed);
+        return Result.Failure<AuthResponse>(result.IsNotAllowed
+            ? UserErrors.EmailNotConfirmed
+            : result.IsLockedOut ? UserErrors.UserLockedOut : UserErrors.InvalidCredentials);
     }
 
 
@@ -71,9 +76,17 @@ public class AuthService(
         if (userId is null)
             return Result.Failure<AuthResponse>(UserErrors.InvalidToken);
 
+
         var user = await _userManager.FindByIdAsync(userId);
+
         if (user is null)
             return Result.Failure<AuthResponse>(UserErrors.InvalidUserId);
+
+        if (user.IsDiabled)
+            return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
+
+        if (user.LockoutEnd > DateTime.UtcNow)
+            return Result.Failure<AuthResponse>(UserErrors.UserLockedOut);
 
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(rt => rt.Token == refreshToken && rt.IsActive);
