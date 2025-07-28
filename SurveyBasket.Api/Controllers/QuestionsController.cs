@@ -1,4 +1,4 @@
-﻿using SurveyBasket.Api.Abstractions.Consts;
+﻿using SurveyBasket.Api.Contracts;
 using SurveyBasket.Api.Contracts.Questions;
 using SurveyBasket.Api.Services.Questions;
 
@@ -6,16 +6,15 @@ namespace SurveyBasket.Api.Controllers;
 
 [Route("api/polls/{pollId}/[controller]")]
 [ApiController]
-[Authorize]
 public class QuestionsController(IQuestionService questionService) : ControllerBase
 {
     private readonly IQuestionService _questionService = questionService;
 
     [HttpGet("")]
-    [HasPermission(Permissions.GetQuestions)]
-    public async Task<IActionResult> GetAll([FromRoute] int pollId, CancellationToken cancellationToken)
+    //[HasPermission(Permissions.GetQuestions)]
+    public async Task<IActionResult> GetAll([FromRoute] int pollId, [FromQuery] RequestFilter filter, CancellationToken cancellationToken)
     {
-        var result = await _questionService.GetAllAsync(pollId, cancellationToken);
+        var result = await _questionService.GetAllAsync(pollId, filter, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
