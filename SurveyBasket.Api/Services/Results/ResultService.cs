@@ -17,7 +17,7 @@ public class ResultService(ApplicationDbContext context) : IResultService
             .Select(p => new PollVotesResponse(
                 p.Title,
                 p.Votes.Select(v => new VoteResponse(
-                    $"{v.User.FirstName} {v.User.LastName}",
+                    //$"{v.User.FirstName} {v.User.LastName}", //TODO
                     v.SubmittedOn,
                     v.VoteAnswers.Select(va => new QuestionAnswerResponse(
                         va.Question.Content,

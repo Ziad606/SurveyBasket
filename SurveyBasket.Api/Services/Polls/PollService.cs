@@ -47,6 +47,7 @@ public class PollService(ApplicationDbContext context, INotificationService noti
         if (isExisting)
             return Result.Failure<PollResponse>(PollErrors.DuplicatePollTitle);
         var poll = request.Adapt<Poll>();
+        poll.IsPublished = true;
         await _context.AddAsync(poll, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 

@@ -9,11 +9,11 @@ public class VoteService(ApplicationDbContext context) : IVoteService
 
     public async Task<Result> AddAsync(int pollId, string userId, VoteRequest request, CancellationToken cancellationToken)
     {
-        var hasVote = await _context.Votes
-            .AnyAsync(v => v.PollId == pollId && v.UserId == userId, cancellationToken);
+        //var hasVote = await _context.Votes
+        //    .AnyAsync(v => v.PollId == pollId && v.UserId == userId, cancellationToken);
 
-        if (hasVote)
-            return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.VoteAlreadyVoted);
+        //if (hasVote)
+        //    return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.VoteAlreadyVoted);
 
         var pollIsExist = await _context.Polls.AnyAsync(p => p.Id == pollId && p.IsPublished && p.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow) && p.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
 
@@ -36,7 +36,7 @@ public class VoteService(ApplicationDbContext context) : IVoteService
         var vote = new Vote
         {
             PollId = pollId,
-            UserId = userId,
+            //UserId = userId,
             VoteAnswers = request.Answers.Adapt<List<VoteAnswer>>()
         };
 

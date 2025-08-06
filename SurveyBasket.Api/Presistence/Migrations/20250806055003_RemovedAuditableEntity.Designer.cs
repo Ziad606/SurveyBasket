@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SurveyBasket.Api.Presistenace;
 
@@ -11,9 +12,11 @@ using SurveyBasket.Api.Presistenace;
 namespace SurveyBasket.Api.Presistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250806055003_RemovedAuditableEntity")]
+    partial class RemovedAuditableEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -406,7 +409,7 @@ namespace SurveyBasket.Api.Presistence.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@SURVEY-BASKET.COM",
                             NormalizedUserName = "ADMIN@SURVEY-BASKET.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJQ4b0YXzu7WWyv21XYnn6pD4rgqOv2X6Rtg9QmHyNIBivQukyQoVI2HCfyP1Tu/kw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEO+TyjJcYmz06Y1RlG+RXio6ciQbKg86HYZ8Ge3rq4oyrKGKMbQR0wlADt6a+ZSm4A==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "822133515D3340F3AEDF6022D5ECBB51",
                             TwoFactorEnabled = false,
@@ -490,10 +493,16 @@ namespace SurveyBasket.Api.Presistence.Migrations
                     b.Property<DateTime>("SubmittedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("PollId")
-                        .IsUnique();
+                    b.HasIndex("PollId");
+
+                    b.HasIndex("UserId", "PollId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Votes");
                 });
@@ -645,7 +654,13 @@ namespace SurveyBasket.Api.Presistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SurveyBasket.Api.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Poll");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SurveyBasket.Api.Entities.VoteAnswer", b =>

@@ -41,13 +41,13 @@ public class QuestionService(ApplicationDbContext context, HybridCache hybridCac
 
     }
 
-    public async Task<Result<IEnumerable<QuestionResponse>>> GetAvailableAsync(int pollId, string userId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<QuestionResponse>>> GetAvailableAsync(int pollId, CancellationToken cancellationToken = default) // string userId,
     {
-        var hasVote = await _context.Votes
-            .AnyAsync(v => v.PollId == pollId && v.UserId == userId, cancellationToken);
+        //var hasVote = await _context.Votes
+        //    .AnyAsync(v => v.PollId == pollId && v.UserId == userId, cancellationToken);
 
-        if (hasVote)
-            return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.VoteAlreadyVoted);
+        //if (hasVote)
+        //    return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.VoteAlreadyVoted);
 
         var pollIsExist = await _context.Polls.AnyAsync(p => p.Id == pollId && p.IsPublished && p.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow) && p.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
 
