@@ -15,7 +15,7 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
     public async Task<IActionResult> GetAll([FromRoute] int pollId, [FromQuery] RequestFilter filter, CancellationToken cancellationToken)
     {
         var result = await _questionService.GetAllAsync(pollId, filter, cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        return result.IsSuccess ? Ok(result) : result.ToProblem();
     }
 
     [HttpGet("{id}")]
@@ -23,7 +23,7 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
     public async Task<IActionResult> Get([FromRoute] int pollId, [FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await _questionService.GetAsync(pollId, id, cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        return result.IsSuccess ? Ok(result) : result.ToProblem();
     }
 
     [HttpPost("")]
@@ -33,7 +33,7 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
         var result = await _questionService.AddAsync(pollId, request, cancellationToken);
 
         return result.IsSuccess
-            ? CreatedAtAction(nameof(Get), new { pollId, result.Value.Id }, result.Value)
+            ? CreatedAtAction(nameof(Get), new { pollId, result.Value.Id }, result)
             : result.ToProblem();
     }
 

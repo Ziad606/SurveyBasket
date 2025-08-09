@@ -15,7 +15,7 @@ public class ResultsController(IResultService resultService) : ControllerBase
     {
         var result = await _resultService.GetPollVotesAsync(pollId, cancellationToken);
         return result.IsSuccess
-            ? Ok(result.Value)
+            ? Ok(result)
             : result.ToProblem();
     }
 
@@ -24,7 +24,7 @@ public class ResultsController(IResultService resultService) : ControllerBase
     {
         var result = await _resultService.GetVotesPerDayAsync(pollId, cancellationToken);
         return result.IsSuccess
-            ? Ok(result.Value)
+            ? Ok(result)
             : result.ToProblem();
     }
     [HttpGet("votes-per-question")]
@@ -32,7 +32,7 @@ public class ResultsController(IResultService resultService) : ControllerBase
     {
         var result = await _resultService.GetVotesPerQuestionAsync(pollId, cancellationToken);
         return result.IsSuccess
-            ? Ok(result.Value)
+            ? Ok(result)
             : result.ToProblem();
     }
 }

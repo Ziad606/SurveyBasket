@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Cors;
-using SurveyBasket.Api.Services.Polls;
+﻿using SurveyBasket.Api.Services.Polls;
 
 namespace SurveyBasket.Api.Controllers;
 
@@ -18,7 +17,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.GetAllAsync(cancellationToken);
 
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        return result.IsSuccess ? Ok(result) : result.ToProblem();
     }
 
 
@@ -28,7 +27,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.GetCurrentAsync(cancellationToken);
 
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        return result.IsSuccess ? Ok(result) : result.ToProblem();
     }
 
     [HttpGet("{id}")]
@@ -37,17 +36,17 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         var result = await _pollService.GetAsync(id, cancellationToken);
 
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        return result.IsSuccess ? Ok(result) : result.ToProblem();
     }
 
     [HttpPost("")]
-    [DisableCors]
+    //[DisableCors]
     //[HasPermission(Permissions.AddPolls)]
     public async Task<IActionResult> Add([FromBody] PollRequest request, CancellationToken cancellationToken)
     {
         var result = await _pollService.AddAsync(request, cancellationToken);
 
-        return result.IsSuccess ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result.Value) : result.ToProblem();
+        return result.IsSuccess ? CreatedAtAction(nameof(Get), new { id = result.Value.Id }, result) : result.ToProblem();
     }
 
     [HttpPut("{id}")]
@@ -60,7 +59,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [DisableCors]
+    //[DisableCors]
     //[HasPermission(Permissions.DeletePolls)]
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
     {
@@ -70,7 +69,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     }
 
     [HttpPut("{id}/togglePublish")]
-    [EnableCors("AllowAll")]
+    //[EnableCors("AllowAll")]
     //[HasPermission(Permissions.UpdatePolls)]
     public async Task<IActionResult> TogglePublish([FromRoute] int id, CancellationToken cancellationToken)
     {

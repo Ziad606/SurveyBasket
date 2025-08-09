@@ -32,7 +32,7 @@ public class RolesController(IRoleService roleService) : ControllerBase
     {
         var result = await _roleService.AddAsync(request, cancellationToken);
         return result.IsSuccess
-            ? CreatedAtAction(nameof(Get), new { result.Value.Id }, result.Value)
+            ? CreatedAtAction(nameof(Get), new { result.Value.Id }, result)
             : result.ToProblem();
     }
 
