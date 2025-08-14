@@ -16,6 +16,7 @@ using SurveyBasket.Api.Services.Votes;
 using SurveyBasket.Api.Settings;
 using System.Reflection;
 using System.Text;
+using SurveyBasket.Api.HealthCheck;
 
 
 namespace SurveyBasket.Api;
@@ -27,7 +28,7 @@ public static class DependencyInjection
     {
         services.AddControllers();
         services.AddAuthConfig(configuration);
-        var alloweOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
+        var allowOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
         services.AddCors(options =>
            {
                options.AddPolicy("AllowAll", builder =>
@@ -38,9 +39,9 @@ public static class DependencyInjection
                 );
                options.AddPolicy("MyPolicy", builder =>
                    builder
-                   .WithOrigins(alloweOrigins!)
-                   .AllowAnyMethod()       // or specify methode : .WithMethods("Get","Put")
-                   .AllowAnyHeader()      //  or specify headers : .WithHeaders(HeaderNames.ContentType, "")
+                   .WithOrigins(allowOrigins!)
+                   .AllowAnyMethod()       // or specify methode: .WithMethods("Get","Put")
+                   .AllowAnyHeader()      //  or specify headers: .WithHeaders(HeaderNames.ContentType, "")
 
                 );
            }
@@ -85,6 +86,15 @@ public static class DependencyInjection
 
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
+        
+        services.AddHealthChecks()
+            .AddDbContextCheck<ApplicationDbContext>(name : "database")
+            .AddHangfire(options =>
+            {
+                options.MinimumAvailableServers = 1;
+                
+            })
+            .AddCheck<MailProviderHealthCheck>(name :"mail provider"); 
 
         return services;
     }

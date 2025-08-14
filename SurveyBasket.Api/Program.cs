@@ -1,3 +1,5 @@
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using SurveyBasket.Api;
 
@@ -61,5 +63,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseExceptionHandler();
+app.MapHealthChecks("health", new HealthCheckOptions{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.Run();
