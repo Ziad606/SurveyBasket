@@ -1,4 +1,5 @@
-﻿using SurveyBasket.Api.Contracts.Register;
+﻿using Microsoft.AspNetCore.RateLimiting;
+using SurveyBasket.Api.Contracts.Register;
 using SurveyBasket.Api.Contracts.User;
 using SurveyBasket.Api.Services.Authentication;
 
@@ -6,12 +7,14 @@ namespace SurveyBasket.Api.Controllers;
 
 [Route("[controller]")]
 [ApiController]
+// [EnableRateLimiting(RateLimitPolicies.IpLimiter)]
 public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
 
 
     [HttpPost("")]
+    [EnableRateLimiting("userLimiter")]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
         var result = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
@@ -42,7 +45,8 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Resgister([FromBody] RegisterRequest request, CancellationToken cancellationToken)
+    [DisableRateLimiting]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
         var result = await _authService.RegisterAsync(request, cancellationToken);
 
@@ -83,4 +87,17 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
+
+
+    [HttpGet("test")]
+    [EnableRateLimiting(RateLimitPolicies.Concurrency)]
+    // [EnableRateLimiting(RateLimitPolicies.TokenBucket)]
+    // [EnableRateLimiting(RateLimitPolicies.FixedWindow)]
+    // [EnableRateLimiting(RateLimitPolicies.SlidingWindow)]
+    public IActionResult Test()
+    {
+        Thread.Sleep(10000);
+        return Ok();
+    }
 }
+

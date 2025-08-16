@@ -65,7 +65,7 @@ app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.UseRateLimiter();
 app.UseExceptionHandler();
 app.MapHealthChecks("health", new HealthCheckOptions{
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse

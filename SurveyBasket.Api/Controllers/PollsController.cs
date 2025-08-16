@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Cors;
-using SurveyBasket.Api.Abstractions.Consts;
+using Microsoft.AspNetCore.RateLimiting;
 using SurveyBasket.Api.Services.Polls;
 
 namespace SurveyBasket.Api.Controllers;
@@ -7,6 +7,7 @@ namespace SurveyBasket.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize(Roles = DefaultRole.Member)]
+[EnableRateLimiting("concurrency")]
 public class PollsController(IPollService pollService) : ControllerBase
 {
     private readonly IPollService _pollService = pollService;
