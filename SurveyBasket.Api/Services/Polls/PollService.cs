@@ -26,8 +26,6 @@ public class PollService(ApplicationDbContext context, INotificationService noti
                     .ProjectToType<PollResponse>()
                     .ToListAsync(cancellationToken);
 
-        if (polls is null)
-            return Result.Failure<IEnumerable<PollResponse>>(PollErrors.NoAvailablePolls);
 
         return Result.Success<IEnumerable<PollResponse>>(polls);
     }
@@ -90,7 +88,7 @@ public class PollService(ApplicationDbContext context, INotificationService noti
         return Result.Success();
     }
 
-    public async Task<Result> TogglePublishStatusASync(int id, CancellationToken cancellationToken)
+    public async Task<Result> TogglePublishStatusAsync(int id, CancellationToken cancellationToken)
     {
         var poll = await _context.Polls.FindAsync(id, cancellationToken);
 

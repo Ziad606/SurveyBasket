@@ -76,7 +76,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     [HasPermission(Permissions.UpdatePolls)]
     public async Task<IActionResult> TogglePublish([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var result = await _pollService.TogglePublishStatusASync(id, cancellationToken);
+        var result = await _pollService.TogglePublishStatusAsync(id, cancellationToken);
 
 
         return result.IsSuccess
